@@ -1,0 +1,113 @@
+import { StyleSheet } from "react-native";
+
+export const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 30,
+  },
+  backgroundImage: {
+    flex: 1,
+  },
+  loginCard: {
+    width: "100%",
+    maxWidth: 420,
+    backgroundColor: "white",
+    paddingVertical: 50,
+    paddingHorizontal: 40,
+    borderRadius: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 20 },
+    shadowOpacity: 0.3,
+    shadowRadius: 60,
+    elevation: 10,
+    alignItems: "center",
+  },
+  logo: {
+    width: 120,
+    height: 120,
+    marginBottom: 35,
+    borderRadius: 10,
+    resizeMode: "cover",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 5,
+  },
+  title: {
+    marginBottom: 25,
+    fontSize: 16,
+    color: "#666",
+    fontWeight: "500",
+  },
+  usernameWrapper: {
+    width: "100%",
+    marginBottom: 16,
+  },
+  passwordWrapper: {
+    width: "100%",
+    marginBottom: 16,
+    position: "relative",
+  },
+  input: {
+    width: "100%",
+    borderWidth: 2,
+    borderColor: "#2aa8a1",
+    borderRadius: 10,
+    padding: 14,
+    fontSize: 14,
+    backgroundColor: "#ffffff",
+  },
+  toggleContainer: {
+    position: "absolute",
+    right: 14,
+    top: "50%",
+    transform: [{ translateY: -10 }],
+  },
+  toggle: {
+    fontSize: 13,
+    color: "#2aa8a1",
+    fontWeight: "500",
+  },
+  row: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 28,
+    width: "100%",
+    paddingHorizontal: 0,
+  },
+  rememberRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  rememberText: {
+    marginLeft: 8,
+  },
+  forgot: {
+    color: "#2aa8a1",
+    fontWeight: "500",
+  },
+  button: {
+    backgroundColor: "#2aa8a1",
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+    width: "100%",
+    alignItems: "center",
+  },
+  buttonText: {
+    color: "white",
+    fontWeight: "600",
+    fontSize: 15,
+  },
+  create: {
+    textAlign: "center",
+    marginTop: 28,
+    fontSize: 14,
+    color: "#666",
+  },
+});

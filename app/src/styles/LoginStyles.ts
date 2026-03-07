@@ -88,7 +88,7 @@ export const styles = StyleSheet.create({
     marginLeft: 8,
   },
   forgot: {
-    color: "#2aa8a1",
+    color: "#060606",
     fontWeight: "500",
   },
   button: {

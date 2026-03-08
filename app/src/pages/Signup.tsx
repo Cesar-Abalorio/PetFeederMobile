@@ -32,25 +32,32 @@ export default function Signup() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [passwordStrength, setPasswordStrength] = useState("");
+  const [passwordsMatch, setPasswordsMatch] = useState(true);
 
   const checkPasswordStrength = (pass: string) => {
     setPassword(pass);
 
-    if (pass.length < 6) {
-      setPasswordStrength("Weak");
-    } else if (
-      pass.length >= 6 &&
-      (!/[A-Z]/.test(pass) || !/[0-9]/.test(pass))
-    ) {
-      setPasswordStrength("Medium");
-    } else if (
+    // Password Strength
+    if (
       pass.length >= 8 &&
       /[A-Z]/.test(pass) &&
       /[0-9]/.test(pass) &&
       /[!@#$%^&*]/.test(pass)
     ) {
       setPasswordStrength("Strong");
+    } else if (pass.length >= 6) {
+      setPasswordStrength("Medium");
+    } else {
+      setPasswordStrength("Weak");
     }
+
+    // Update password match realtime
+    setPasswordsMatch(pass === confirmPassword && confirmPassword !== "");
+  };
+
+  const handleConfirmPasswordChange = (text: string) => {
+    setConfirmPassword(text);
+    setPasswordsMatch(password === text && text !== "");
   };
 
   const handleSignup = async () => {
@@ -127,7 +134,7 @@ export default function Signup() {
                   style={styles.input}
                   secureTextEntry={!showPassword}
                   value={password}
-                  onChangeText={checkPasswordStrength}
+                  onChangeText={checkPasswordStrength} // make sure gamit ni
                 />
 
                 <TouchableOpacity
@@ -144,7 +151,7 @@ export default function Signup() {
               {password !== "" && (
                 <Text
                   style={{
-                    marginBottom: 10,
+                    marginBottom: 5,
                     fontWeight: "600",
                     color:
                       passwordStrength === "Weak"
@@ -164,8 +171,9 @@ export default function Signup() {
                   style={styles.input}
                   secureTextEntry={!showConfirmPassword}
                   value={confirmPassword}
-                  onChangeText={setConfirmPassword}
+                  onChangeText={handleConfirmPasswordChange} // gamiton ni
                 />
+
                 <TouchableOpacity
                   style={styles.showButton}
                   onPress={() => setShowConfirmPassword(!showConfirmPassword)}
@@ -175,6 +183,21 @@ export default function Signup() {
                   </Text>
                 </TouchableOpacity>
               </View>
+
+              {/* Password Match */}
+              {confirmPassword !== "" && (
+                <Text
+                  style={{
+                    marginBottom: 10,
+                    fontWeight: "600",
+                    color: passwordsMatch ? "green" : "red",
+                  }}
+                >
+                  {passwordsMatch
+                    ? "Passwords match ✅"
+                    : "Passwords do not match ❌"}
+                </Text>
+              )}
 
               <TouchableOpacity style={styles.button} onPress={handleSignup}>
                 <Text style={styles.buttonText}>Create Account</Text>

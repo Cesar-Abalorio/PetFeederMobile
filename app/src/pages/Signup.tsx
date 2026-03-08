@@ -28,12 +28,18 @@ export default function Signup() {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
   const handleSignup = async () => {
-    if (!username || !email || !password) {
+    if (!username || !email || !password || !confirmPassword) {
       Alert.alert("Please fill in all fields.");
       return;
     }
+
+    if (password !== confirmPassword) {
+  Alert.alert("Passwords do not match.");
+  return;
+}
 
     const usersJson = await AsyncStorage.getItem("users");
     const users = usersJson ? JSON.parse(usersJson) : [];
@@ -92,15 +98,15 @@ export default function Signup() {
                 />
               </View>
 
-              <View style={styles.inputWrapper}>
-                <TextInput
-                  placeholder="Password"
-                  style={styles.input}
-                  secureTextEntry
-                  value={password}
-                  onChangeText={setPassword}
-                />
-              </View>
+<View style={styles.inputWrapper}>
+  <TextInput
+    placeholder="Confirm Password"
+    style={styles.input}
+    secureTextEntry
+    value={confirmPassword}
+    onChangeText={setConfirmPassword}
+  />
+</View>
 
               <TouchableOpacity style={styles.button} onPress={handleSignup}>
                 <Text style={styles.buttonText}>Create Account</Text>

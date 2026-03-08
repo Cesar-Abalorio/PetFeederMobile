@@ -29,6 +29,29 @@ export default function Signup() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [passwordStrength, setPasswordStrength] = useState("");
+
+  const checkPasswordStrength = (pass: string) => {
+    setPassword(pass);
+
+    if (pass.length < 6) {
+      setPasswordStrength("Weak");
+    } else if (
+      pass.length >= 6 &&
+      (!/[A-Z]/.test(pass) || !/[0-9]/.test(pass))
+    ) {
+      setPasswordStrength("Medium");
+    } else if (
+      pass.length >= 8 &&
+      /[A-Z]/.test(pass) &&
+      /[0-9]/.test(pass) &&
+      /[!@#$%^&*]/.test(pass)
+    ) {
+      setPasswordStrength("Strong");
+    }
+  };
 
   const handleSignup = async () => {
     if (!username || !email || !password || !confirmPassword) {
@@ -37,9 +60,9 @@ export default function Signup() {
     }
 
     if (password !== confirmPassword) {
-  Alert.alert("Passwords do not match.");
-  return;
-}
+      Alert.alert("Passwords do not match.");
+      return;
+    }
 
     const usersJson = await AsyncStorage.getItem("users");
     const users = usersJson ? JSON.parse(usersJson) : [];
@@ -98,15 +121,60 @@ export default function Signup() {
                 />
               </View>
 
-<View style={styles.inputWrapper}>
-  <TextInput
-    placeholder="Confirm Password"
-    style={styles.input}
-    secureTextEntry
-    value={confirmPassword}
-    onChangeText={setConfirmPassword}
-  />
-</View>
+              <View style={styles.inputWrapper}>
+                <TextInput
+                  placeholder="Password"
+                  style={styles.input}
+                  secureTextEntry={!showPassword}
+                  value={password}
+                  onChangeText={checkPasswordStrength}
+                />
+
+                <TouchableOpacity
+                  style={styles.showButton}
+                  onPress={() => setShowPassword(!showPassword)}
+                >
+                  <Text style={styles.showText}>
+                    {showPassword ? "Hide" : "Show"}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+
+              {/* Password Strength */}
+              {password !== "" && (
+                <Text
+                  style={{
+                    marginBottom: 10,
+                    fontWeight: "600",
+                    color:
+                      passwordStrength === "Weak"
+                        ? "red"
+                        : passwordStrength === "Medium"
+                          ? "orange"
+                          : "green",
+                  }}
+                >
+                  Strength: {passwordStrength}
+                </Text>
+              )}
+
+              <View style={styles.inputWrapper}>
+                <TextInput
+                  placeholder="Confirm Password"
+                  style={styles.input}
+                  secureTextEntry={!showConfirmPassword}
+                  value={confirmPassword}
+                  onChangeText={setConfirmPassword}
+                />
+                <TouchableOpacity
+                  style={styles.showButton}
+                  onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+                >
+                  <Text style={styles.showText}>
+                    {showConfirmPassword ? "Hide" : "Show"}
+                  </Text>
+                </TouchableOpacity>
+              </View>
 
               <TouchableOpacity style={styles.button} onPress={handleSignup}>
                 <Text style={styles.buttonText}>Create Account</Text>

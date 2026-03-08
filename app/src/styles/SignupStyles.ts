@@ -15,7 +15,7 @@ export const styles = StyleSheet.create({
   },
 
   signupCard: {
-    width: width > 600 ? 400 : "100%", // responsive card width
+    width: width > 600 ? 400 : "100%",
     backgroundColor: "white",
     padding: 25,
     borderRadius: 15,
@@ -34,9 +34,11 @@ export const styles = StyleSheet.create({
     marginBottom: 20,
   },
 
+  // ---------- INPUT WRAPPER & SHOW BUTTON ----------
   inputWrapper: {
     width: "100%",
     marginBottom: 15,
+    position: "relative", // important para ma-position ang Show/Hide button
   },
 
   input: {
@@ -44,7 +46,21 @@ export const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#ccc",
     padding: 12,
+    paddingRight: 60, // space para sa Show/Hide button
     borderRadius: 8,
+  },
+
+  showButton: {
+    position: "absolute",
+    right: 15,
+    top: 0,
+    bottom: 0,
+    justifyContent: "center",
+  },
+
+  showText: {
+    color: "#2aa8a1",
+    fontWeight: "600",
   },
 
   button: {

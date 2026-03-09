@@ -321,11 +321,17 @@ export default function User() {
       </View>
 
       <View style={styles.topActions}>
-        <TouchableOpacity style={styles.actionBtn}>
+        <TouchableOpacity
+          style={styles.actionBtn}
+          onPress={() => setShowNotifications(true)}
+        >
           <Text>🔔 Notification</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.actionBtn}>
+        <TouchableOpacity
+          style={styles.actionBtn}
+          onPress={() => setShowDropdown(true)}
+        >
           <Text>👤 Profile</Text>
         </TouchableOpacity>
       </View>

@@ -1,11 +1,14 @@
-import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { ImageBackground, StyleSheet, Text } from "react-native";
 
 export default function Dashboard() {
   return (
-    <View style={styles.container}>
+    <ImageBackground
+      source={require("../assets/Bg.png")}
+      style={styles.container}
+      resizeMode="cover"
+    >
       <Text style={styles.title}>Dashboard</Text>
-    </View>
+    </ImageBackground>
   );
 }
 

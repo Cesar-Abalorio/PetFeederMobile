@@ -2,15 +2,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { useNavigation, type NavigationProp } from "@react-navigation/native";
 import React, { useEffect, useState } from "react";
-import {
-  Alert,
-  FlatList,
-  Modal,
-  ScrollView,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import {Alert,FlatList,Modal,ScrollView,Text,TouchableOpacity,View,ImageBackground} from "react-native";
 import { styles } from "../styles/User";
 
 type RootStackParamList = {
@@ -311,6 +303,11 @@ export default function User() {
   }
 
   return (
+    <ImageBackground
+    source={require("../assets/Bg.png")}
+    style={{ flex: 1 }}
+    resizeMode="cover"
+  >
     <ScrollView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
@@ -494,5 +491,6 @@ export default function User() {
         />
       )}
     </ScrollView>
+  </ImageBackground>
   );
 }

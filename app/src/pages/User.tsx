@@ -11,6 +11,13 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import {
+  getDevices,
+  getSchedules,
+  getLogs,
+  feedDevice,
+  logout as backendLogout,
+} from "../services/api";
 import { styles } from "../styles/User";
 
 type RootStackParamList = {
@@ -23,6 +30,7 @@ type RootStackParamList = {
 export default function User() {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const [currentUser, setCurrentUser] = useState<string | null>(null);
+  const [devices, setDevices] = useState<Array<{ id: number; name: string; status: string }>>([]);
 
   const [foodLevels, setFoodLevels] = useState<number[]>([100]);
   const [lastFeds, setLastFeds] = useState<string[]>(["Not yet"]);
@@ -36,6 +44,7 @@ export default function User() {
   const [deviceSchedules, setDeviceSchedules] = useState<string[][]>([[]]);
   const [scheduleInputs, setScheduleInputs] = useState<string[]>([""]);
   const [notifications, setNotifications] = useState<string[]>([]);
+  const [logs, setLogs] = useState<any[]>([]);
   const [lastTriggeredMinute, setLastTriggeredMinute] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
@@ -78,37 +87,47 @@ export default function User() {
     if (!currentUser) return;
 
     const initializeData = async () => {
-      // Get user device count
-      const usersJson = await AsyncStorage.getItem("users");
-      const users = usersJson ? JSON.parse(usersJson) : [];
-      const userData = users.find((u: any) => u.email === currentUser);
-      const deviceCount = userData?.deviceCount || 1;
+      let count = 1;
 
-      // Initialize device statuses
-      const initialStatuses = Array.from({ length: deviceCount }, (_, i) => ({
-        id: i + 1,
-        status: "Online" as const,
-        lastOnline: null,
-      }));
-      setDeviceStatuses(initialStatuses);
+      try {
+        const backendDevices = await getDevices();
+        setDevices(backendDevices);
+        count = Math.max(1, backendDevices.length);
 
-      // Initialize food levels and last feeds
-      setFoodLevels(Array(deviceCount).fill(100));
-      setLastFeds(Array(deviceCount).fill("Not yet"));
+        const backendStatuses = backendDevices.map((device: any) => ({
+          id: device.id,
+          status: (device.status as "Online" | "Offline" | "Not Working") || "Online",
+          lastOnline: null,
+        }));
+        setDeviceStatuses(backendStatuses);
+      } catch {
+        const usersJson = await AsyncStorage.getItem("users");
+        const users = usersJson ? JSON.parse(usersJson) : [];
+        const userData = users.find((u: any) => u.email === currentUser);
+        count = userData?.deviceCount || 1;
 
-      // Initialize schedules
-      const initialSchedules = Array.from({ length: deviceCount }, () => []);
+        const fallbackStatuses = Array.from({ length: count }, (_, i) => ({
+          id: i + 1,
+          status: "Online" as const,
+          lastOnline: null,
+        }));
+        setDeviceStatuses(fallbackStatuses);
+      }
+
+      setFoodLevels(Array(count).fill(100));
+      setLastFeds(Array(count).fill("Not yet"));
+
+      const initialSchedules = Array.from({ length: count }, () => []);
       setDeviceSchedules(initialSchedules);
-      setScheduleInputs(Array(deviceCount).fill(""));
+      setScheduleInputs(Array(count).fill(""));
 
-      // Load saved schedules
       const savedSchedules = await AsyncStorage.getItem(
         `deviceSchedules_${currentUser}`,
       );
       if (savedSchedules) {
         const parsed = JSON.parse(savedSchedules);
         const schedules = Array.from(
-          { length: deviceCount },
+          { length: count },
           (_, i) => parsed[i] || [],
         );
         setDeviceSchedules(schedules);
@@ -116,6 +135,34 @@ export default function User() {
     };
 
     initializeData();
+
+    const fetchAdditionalData = async () => {
+      try {
+        const schedules = await getSchedules();
+        const deviceScheduleMap = Array.from({ length: deviceStatuses.length || 1 }, () => [] as string[]);
+
+        schedules.forEach((schedule: any) => {
+          if (schedule.device && schedule.time) {
+            const index = Math.max(0, schedule.device - 1);
+            deviceScheduleMap[index] = deviceScheduleMap[index] || [];
+            deviceScheduleMap[index].push(typeof schedule.time === "string" ? schedule.time : schedule.time);
+          }
+        });
+
+        setDeviceSchedules(deviceScheduleMap);
+      } catch {
+        // ignore schedule fetch errors
+      }
+
+      try {
+        const backendLogs = await getLogs();
+        setLogs(backendLogs);
+      } catch {
+        // ignore log fetch errors
+      }
+    };
+
+    fetchAdditionalData();
 
     const interval = setInterval(() => {
       setDeviceStatuses((prevStatuses) =>
@@ -207,11 +254,11 @@ export default function User() {
     return `Device ${deviceId}`;
   };
 
-  const handleManualFeed = (deviceId: number) => {
-    const deviceIndex = deviceId - 1;
-    const currentFoodLevel = foodLevels[deviceIndex];
-
-    if (currentFoodLevel > 0) {
+  const handleManualFeed = async (deviceId: number) => {
+    try {
+      const response = await feedDevice(deviceId, 50);
+      const deviceIndex = deviceId - 1;
+      const currentFoodLevel = foodLevels[deviceIndex];
       const newFoodLevel = Math.max(currentFoodLevel - 5, 0);
       const newFoodLevels = [...foodLevels];
       newFoodLevels[deviceIndex] = newFoodLevel;
@@ -226,10 +273,14 @@ export default function User() {
       addNotification(
         `✅ Manual feeding successful for ${getDeviceName(deviceId)} at ${now}`,
       );
-    } else {
-      addFeedLog("Manual", "Failed", currentFoodLevel, deviceId);
+
+      if (response?.message) {
+        addNotification(response.message);
+      }
+    } catch (error: any) {
+      addFeedLog("Manual", "Failed", foodLevels[deviceId - 1], deviceId);
       addNotification(
-        `❌ Manual feeding failed for ${getDeviceName(deviceId)}. No food.`,
+        `❌ Manual feeding failed for ${getDeviceName(deviceId)}: ${error.message}`,
       );
     }
   };
@@ -297,8 +348,15 @@ export default function User() {
   }, [foodLevels, currentUser]);
 
   const handleLogout = async () => {
+    try {
+      await backendLogout();
+    } catch {
+      // If backend logout fails, still clear local data.
+    }
+
     await AsyncStorage.removeItem("currentUser");
     await AsyncStorage.removeItem("role");
+    await AsyncStorage.removeItem("authToken");
     navigation.navigate("Login");
   };
 

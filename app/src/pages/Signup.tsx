@@ -1,4 +1,3 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation, type NavigationProp } from "@react-navigation/native";
 import React, { useState } from "react";
 import {
@@ -13,6 +12,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { signup as backendSignup } from "../services/api";
 import { styles } from "../styles/SignupStyles";
 
 type RootStackParamList = {
@@ -71,21 +71,13 @@ export default function Signup() {
       return;
     }
 
-    const usersJson = await AsyncStorage.getItem("users");
-    const users = usersJson ? JSON.parse(usersJson) : [];
-
-    const existingUser = users.find((user: any) => user.email === email);
-    if (existingUser) {
-      Alert.alert("Email already registered.");
-      return;
+    try {
+      await backendSignup(username, email, password);
+      Alert.alert("Account created successfully!", "Please log in.");
+      navigation.navigate("Login");
+    } catch (error: any) {
+      Alert.alert("Signup failed", error.message || "Unable to create account");
     }
-
-    const newUser = { username, email, password };
-    users.push(newUser);
-    await AsyncStorage.setItem("users", JSON.stringify(users));
-
-    Alert.alert("Account created successfully!", "Please log in.");
-    navigation.navigate("Login");
   };
 
   return (

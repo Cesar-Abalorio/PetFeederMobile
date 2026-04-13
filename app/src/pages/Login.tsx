@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import { useNavigation, type NavigationProp } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { login as backendLogin } from "../services/api";
 import { styles } from "../styles/LoginStyles";
 
 // declare a root stack param list to get proper typing for navigation
@@ -20,8 +21,6 @@ type RootStackParamList = {
   Dashboard: undefined;
   User: undefined;
 };
-
-
 
 export default function Login() {
   const [username, setUsername] = useState("");
@@ -37,7 +36,7 @@ export default function Login() {
       return;
     }
 
-    // Admin login
+    // Admin login fallback
     if (username === "admin" && password === "1234") {
       await AsyncStorage.setItem("currentUser", "admin");
       await AsyncStorage.setItem("role", "admin");
@@ -45,21 +44,12 @@ export default function Login() {
       return;
     }
 
-    const usersJson = await AsyncStorage.getItem("users");
-    const users = usersJson ? JSON.parse(usersJson) : [];
-
-    const validUser = users.find(
-      (user: any) =>
-        user.email.trim() === username.trim() &&
-        user.password === password
-    );
-
-    if (validUser) {
-      await AsyncStorage.setItem("currentUser", validUser.email);
+    try {
+      await backendLogin(username, password);
       await AsyncStorage.setItem("role", "user");
       navigation.navigate("User");
-    } else {
-      Alert.alert("Invalid credentials");
+    } catch (error: any) {
+      Alert.alert("Login failed", error.message || "Invalid credentials");
     }
   };
 
